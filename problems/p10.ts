@@ -2,16 +2,17 @@ import { prisma } from "./prisma";
 
 // Deleting a thing, only works swell, if things that reference it are deleted as well
 export const deleteAllUsersWithAgeUnderN = async (n: number) => {
-  const allUsers = await prisma.user.findMany();
-  const usersToDelete = allUsers.filter((user) => user.age < n);
-
-  await prisma.starRating.deleteMany({
+  const deletedRatings = await prisma.starRating.deleteMany({
     where: {
-      userId: {
-        in: usersToDelete.map((user) => user.id),
+      user: {
+        age: {
+          lt: n,
+        },
       },
     },
   });
+
+  if (!deletedRatings) return;
 
   await prisma.user.deleteMany({
     where: {

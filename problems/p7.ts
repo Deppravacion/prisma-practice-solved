@@ -1,9 +1,13 @@
 import { prisma } from "./prisma";
 
 // get average score for a user
-export const getAverageScoreForUser = async (userId: number) => {
-  const ratings = await prisma.starRating.findMany({
-    where: { userId },
-  });
-  return ratings.reduceRight((a, c) => a + c.score, 0) / ratings.length;
+export const getAverageScoreForUser = (userId: number) => {
+  return prisma.starRating
+    .aggregate({
+      _avg: {
+        score: true,
+      },
+      where: { userId },
+    })
+    .then((aggregatedRating) => aggregatedRating._avg.score);
 };
